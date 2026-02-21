@@ -34,19 +34,74 @@
       }
 
       p {
-        margin: 0;
+        margin: 0 0 1rem;
         line-height: 1.6;
         color: #cbd5e1;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 1.25rem;
+      }
+
+      a {
+        color: #93c5fd;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
       }
     </style>
   </head>
   <body>
     <main>
-      <h1>Blinkist Static Starter</h1>
-      <p>
-        Your starter page is live in the <strong>blinkist</strong> subfolder.
-        Edit this file to begin building your project.
-      </p>
+      <h1>Blinkist Pages</h1>
+      <p>Alle Seiten in diesem Subfolder werden automatisch gelistet.</p>
+      <ul id="pages-list">
+        <li>Seiten werden geladen…</li>
+      </ul>
     </main>
+    <script>
+      const owner = "rhil";
+      const repo = "html";
+      const branch = "main";
+      const folder = "blinkist";
+
+      async function loadPages() {
+        const list = document.getElementById("pages-list");
+        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${folder}?ref=${branch}`;
+
+        try {
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error("GitHub API request failed");
+          }
+
+          const items = await response.json();
+          const pages = items
+            .filter(
+              (item) =>
+                item.type === "file" &&
+                /\.html?$/i.test(item.name) &&
+                item.name.toLowerCase() !== "index.html"
+            )
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+          if (!pages.length) {
+            list.innerHTML = "<li>Keine weiteren Seiten gefunden.</li>";
+            return;
+          }
+
+          list.innerHTML = pages
+            .map((page) => `<li><a href="./${page.name}">${page.name}</a></li>`)
+            .join("");
+        } catch {
+          list.innerHTML = "<li>Konnte Seitenliste nicht laden.</li>";
+        }
+      }
+
+      loadPages();
+    </script>
   </body>
 </html>
