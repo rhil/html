@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Philosophen & Strömungen</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --cream: #f5f0e8;
+    --gold: #c9973a;
+    --rust: #b94f2a;
+    --sage: #5a7a5c;
+    --indigo: #2d3b6e;
+    --dusty: #8b7355;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--cream);
+    background-image: 
+      radial-gradient(ellipse at 20% 50%, rgba(201,151,58,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(45,59,110,0.06) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 40px 24px 80px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 64px;
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 20px auto 0;
+  }
+
+  .subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--dusty);
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .timeline {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* Central spine */
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, var(--gold) 5%, var(--gold) 95%, transparent);
+    transform: translateX(-50%);
+  }
+
+  .era {
+    position: relative;
+    margin-bottom: 56px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.6s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .era:nth-child(1) { animation-delay: 0.1s; }
+  .era:nth-child(2) { animation-delay: 0.2s; }
+  .era:nth-child(3) { animation-delay: 0.3s; }
+  .era:nth-child(4) { animation-delay: 0.4s; }
+  .era:nth-child(5) { animation-delay: 0.5s; }
+  .era:nth-child(6) { animation-delay: 0.6s; }
+  .era:nth-child(7) { animation-delay: 0.7s; }
+
+  .era-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .era-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--cream);
+    flex-shrink: 0;
+  }
+
+  .era-label {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 6px 18px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  .era-date {
+    font-size: 11px;
+    color: var(--dusty);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+
+  .cards-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    position: relative;
+  }
+
+  .cards-row.left-heavy .card:first-child { grid-column: 1; }
+  .cards-row.right-only { grid-template-columns: 1fr 1fr; }
+  .cards-row.right-only .card:first-child { grid-column: 2; }
+
+  .stream-card {
+    border-radius: 4px;
+    padding: 20px 22px;
+    border: 1px solid rgba(0,0,0,0.08);
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+  }
+
+  .stream-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  }
+
+  .stream-card.alt-india {
+    background: linear-gradient(135deg, #fff8ef, #fef3e2);
+    border-color: rgba(201,151,58,0.3);
+  }
+  .stream-card.alt-china {
+    background: linear-gradient(135deg, #eef5ee, #e6f0e7);
+    border-color: rgba(90,122,92,0.3);
+  }
+  .stream-card.alt-greece {
+    background: linear-gradient(135deg, #eef0f8, #e8ecf6);
+    border-color: rgba(45,59,110,0.25);
+  }
+  .stream-card.alt-middle {
+    background: linear-gradient(135deg, #f4f0ea, #ede8df);
+    border-color: rgba(139,115,85,0.3);
+  }
+  .stream-card.alt-modern {
+    background: linear-gradient(135deg, #f8f0ee, #f2e8e5);
+    border-color: rgba(185,79,42,0.25);
+  }
+  .stream-card.alt-19 {
+    background: linear-gradient(135deg, #f2eefc, #eae5f8);
+    border-color: rgba(80,60,140,0.2);
+  }
+  .stream-card.alt-20 {
+    background: linear-gradient(135deg, #eef8f8, #e5f3f4);
+    border-color: rgba(40,100,110,0.25);
+  }
+
+  .stream-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stream-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .philosophers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .phil-tag {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+    border: 1px solid currentColor;
+    transition: all 0.15s ease;
+  }
+
+  .phil-tag:hover {
+    transform: scale(1.05);
+  }
+
+  .phil-tag.key {
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* Color variants for tags */
+  .alt-india .phil-tag { color: #8a6020; background: rgba(201,151,58,0.12); border-color: rgba(201,151,58,0.4); }
+  .alt-india .phil-tag.key { background: rgba(201,151,58,0.25); }
+  .alt-china .phil-tag { color: #3a5e3c; background: rgba(90,122,92,0.1); border-color: rgba(90,122,92,0.4); }
+  .alt-china .phil-tag.key { background: rgba(90,122,92,0.22); }
+  .alt-greece .phil-tag { color: #253060; background: rgba(45,59,110,0.08); border-color: rgba(45,59,110,0.3); }
+  .alt-greece .phil-tag.key { background: rgba(45,59,110,0.18); }
+  .alt-middle .phil-tag { color: #6a5030; background: rgba(139,115,85,0.1); border-color: rgba(139,115,85,0.35); }
+  .alt-middle .phil-tag.key { background: rgba(139,115,85,0.22); }
+  .alt-modern .phil-tag { color: #8b3020; background: rgba(185,79,42,0.08); border-color: rgba(185,79,42,0.3); }
+  .alt-modern .phil-tag.key { background: rgba(185,79,42,0.18); }
+  .alt-19 .phil-tag { color: #4a3580; background: rgba(100,80,180,0.08); border-color: rgba(100,80,180,0.3); }
+  .alt-19 .phil-tag.key { background: rgba(100,80,180,0.18); }
+  .alt-20 .phil-tag { color: #20606a; background: rgba(40,100,110,0.08); border-color: rgba(40,100,110,0.3); }
+  .alt-20 .phil-tag.key { background: rgba(40,100,110,0.18); }
+
+  .core-idea {
+    font-size: 12px;
+    color: var(--dusty);
+    font-style: italic;
+    line-height: 1.5;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0,0,0,0.07);
+  }
+
+  /* Dot colors */
+  .dot-india { background: var(--gold); }
+  .dot-china { background: var(--sage); }
+  .dot-greece { background: var(--indigo); }
+  .dot-middle { background: var(--dusty); }
+  .dot-modern { background: var(--rust); }
+  .dot-19 { background: #7055c0; }
+  .dot-20 { background: #286878; }
+
+  .single-col .cards-row {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 680px) {
+    .timeline::before { left: 16px; }
+    .cards-row, .cards-row.right-only { grid-template-columns: 1fr; }
+    .cards-row.right-only .card:first-child { grid-column: 1; }
+    .era-header { justify-content: flex-start; padding-left: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="subtitle">Hans Joachim Störig</div>
+  <h1>Kleine Weltgeschichte<br>der <em>Philosophie</em></h1>
+  <div style="color:var(--dusty);font-size:13px;margin-top:14px;font-style:italic;">Philosophen &amp; Strömungen im Überblick</div>
+</header>
+
+<div class="timeline">
+
+  <!-- ALTINDISCH -->
+  <div class="era">
+    <div class="era-header">
+      <div class="era-dot dot-india"></div>
+      <div class="era-label">Altindische Philosophie</div>
+      <div class="era-date">ca. 1500–500 v. Chr.</div>
+    </div>
+    <div class="cards-row">
+      <div class="stream-card alt-india">
+        <div class="stream-title"><span class="stream-icon">🕉️</span> Vedisches Denken / Upanischaden</div>
+        <div class="philosophers">
+          <span class="phil-tag">Veden</span>
+          <span class="phil-tag">Upanischaden</span>
+          <span class="phil-tag key">Brahman &amp; Atman</span>
+          <span class="phil-tag">Karma</span>
+          <span class="phil-tag">Moksha</span>
+        </div>
+        <div class="core-idea">Erlösung durch Erkenntnis der Einheit von Selbst (Atman) und Weltgrund (Brahman). Seelenwanderung &amp; Befreiung aus dem Leidenskreislauf.</div>
+      </div>
+      <div class="stream-card alt-india">
+        <div class="stream-title"><span class="stream-icon">☸️</span> Buddhismus</div>
+        <div class="philosophers">
+          <span class="phil-tag key">Siddhartha Gautama (Buddha)</span>
+          <span class="phil-tag">Vier edle Wahrheiten</span>
+          <span class="phil-tag">Achtfacher Pfad</span>
+          <span class="phil-tag">Nirwana</span>
+        </div>
+        <div class="core-idea">Alles Leben ist Leiden – verursacht durch Begierde. Der Achtfache Pfad führt ins Nirwana. Praxis vor Theorie.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALTCHINESISCH -->
+  <div class="era">
+    <div class="era-header">
+      <div class="era-dot dot-china"></div>
+      <div class="era-label">Altchinesisches Denken</div>
+      <div class="era-date">6.–2. Jh. v. Chr.</div>
+    </div>
+    <div class="cards-row">
+      <div class="stream-card alt-china">
+        <div class="stream-title"><span class="stream-icon">🏮</span> Konfuzianismus</div>
+        <div class="philosophers">
+          <span class="phil-tag key">Konfuzius</span>
+          <span class="phil-tag">Goldene Regel</span>
+          <span class="phil-tag">Maßhalten</span>
+          <span class="phil-tag">Selbstdisziplin</span>
+          <span class="phil-tag">Gemeinwohl</span>
+        </div>
+        <div class="core-idea">„Was du nicht wünschst, tue anderen nicht an." Richtiges Handeln &amp; soziale Harmonie als Grundlage des Gemeinschaftslebens.</div>
+      </div>
+      <div class="stream-card alt-china">
+        <div class="stream-title"><span class="stream-icon">☯️</span> Daoismus &amp; Mohismus</div>
+        <div class="philosophers">
+          <span class="phil-tag key">Laotse</span>
+          <span class="phil-tag">Tao (Weg)</span>
+          <span class="phil-tag">Wu Wei (Nicht-Handeln)</span>
+          <span class="phil-tag">Einfachheit</span>
+        </div>
+        <div class="core-idea">Das Tao ist der Urgrund aller Dinge – unbegreiflich. Handeln durch Nicht-Tun; das Weiche überwindet das Harte.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRIECHENLAND -->
+  <div class="era">
+    <div class="era-header">
+      <div class="era-dot dot-greece"></div>
+      <div class="era-label">Altgriechische Philosophie</div>
+      <div class="era-date">ab 6. Jh. v. Chr.</div>
+    </div>
+    <div class="cards-row">
+      <div class="stream-card alt-greece">
+        <div class="stream-title"><span class="stream-icon">🌊</span> Vorsokratiker / Naturphilosophie</div>
+        <div class="philosophers">
+          <span class="phil-tag key">Thales</span>
+          <span class="phil-tag">Anaximander</span>
+          <span class="phil-tag">Anaximenes</span>
+          <span class="phil-tag key">Heraklit</span>
+          <span class="phil-tag">Logos</span>
+          <span class="phil-tag">Wandel</span>
+        </div>
+        <div class="core-idea">Abkehr vom Mythos zur Vernunft. Suche nach dem Urprinzip. „Man kann nicht zweimal in denselben Fluss steigen."</div>
+      </div>
+      <div class="stream-card alt-greece">
+        <div class="stream-title"><span class="stream-icon">🏛️</span> Klassische Antike</div>
+        <div class="philosophers">
+          <span class="phil-tag key">Sokrates</span>
+          <span class="phil-tag key">Platon</span>
+          <span class="phil-tag key">Aristoteles</span>
+          <span class="phil-tag">Höhlengleichnis</span>
+          <span class="phil-tag">Ideenwelt</span>
+          <span class="phil-tag">Logik</span>
+          <span class="phil-tag">Dialektik</span>
+        </div>
+        <div class="core-idea">„Ich weiß, dass ich nichts weiß." Wahrheit durch Argumentation. Platon: Ideen als wahre Wirklichkeit. Aristoteles: Logik als Werkzeug.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MITTELALTER -->
+  <div class="era">
+    <div class="era-header">
+      <div class="era-dot dot-middle"></div>
+      <div class="era-label">Mittelalter</div>
+      <div class="era-date">ca. 400–1400 n. Chr.</div>
+    </div>
+    <div class="cards-row">
+      <div class="stream-card alt-middle">
+        <div class="stream-title"><span class="stream-icon">✝️</span> Patristik</div>
+        <div class="philosophers">
+          <span class="phil-tag key">Augustinus</span>
+          <span class="phil-tag">Platon-Christentum</span>
+          <span class="phil-tag">Willensfreiheit</span>
+          <span class="phil-tag">Zeitbewusstsein</span>
+          <span class="phil-tag">Cogito</span>
+        </div>
+        <div class="core-idea">Christliche Lehre &amp; Platonisches Denken verbunden. Ich mag an allem zweifeln – nicht daran, dass ich denke.</div>
+      </div>
+      <div class="stream-card alt-middle">
+        <div class="stream-title"><span class="stream-icon">📚</span> Scholastik &amp; Mystik</div>
+        <div class="philosophers">
+          <span class="phil-tag key">Thomas von Aquin</span>
+          <span class="phil-tag key">Meister Eckhart</span>
+          <span class="phil-tag">Aristoteles-Theologie</span>
+          <span class="phil-tag">Vernunft &amp; Glaube</span>
+          <span class="phil-tag">Gottesbeweise</span>
+        </div>
+        <div class="core-idea">Glaube und Vernunft ergänzen sich. Mystiker suchen Gott nicht durch Begriffe, sondern durch innere Erfahrung.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RENAISSANCE / AUFKLÄRUNG -->
+  <div class="era">
+    <div class="era-header">
+      <div class="era-dot dot-modern"></div>
+      <div class="era-label">Renaissance &amp; Aufklärung</div>
+      <div class="era-date">15.–18. Jh.</div>
+    </div>
+    <div class="cards-row">
+      <div class="stream-card alt-modern">
+        <div class="stream-title"><span class="stream-icon">💡</span> Rationalismus &amp; Humanismus</div>
+        <div class="philosophers">
+          <span class="phil-tag">Petrarca</span>
+          <span class="phil-tag">Erasmus</span>
+          <span class="phil-tag key">Descartes</span>
+          <span class="phil-tag key">Spinoza</span>
+          <span class="phil-tag">Machiavelli</span>
+          <span class="phil-tag">Cogito ergo sum</span>
+        </div>
+        <div class="core-idea">„Ich denke, also bin ich." Radikaler Zweifel als Ausgangspunkt. Vernunft als Maßstab der Wahrheit. Neue Würde des Menschen.</div>
+      </div>
+      <div class="stream-card alt-modern">
+        <div class="stream-title"><span class="stream-icon">🔭</span> Empirismus &amp; Kritizismus</div>
+        <div class="philosophers">
+          <span class="phil-tag key">John Locke</span>
+          <span class="phil-tag key">David Hume</span>
+          <span class="phil-tag key">Immanuel Kant</span>
+          <span class="phil-tag">Erfahrung</span>
+          <span class="phil-tag">Kategorischer Imperativ</span>
+        </div>
+        <div class="core-idea">Erkenntnis aus Erfahrung (Locke/Hume) vs. Vernunft &amp; Erfahrung zusammen (Kant). „Handle nur nach der Maxime, die allgemeines Gesetz sein kann."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 19. JAHRHUNDERT -->
+  <div class="era">
+    <div class="era-header">
+      <div class="era-dot dot-19"></div>
+      <div class="era-label">19. Jahrhundert</div>
+      <div class="era-date">Idealismus &amp; Kritik</div>
+    </div>
+    <div class="cards-row">
+      <div class="stream-card alt-19">
+        <div class="stream-title"><span class="stream-icon">🌀</span> Deutscher Idealismus &amp; Marxismus</div>
+        <div class="philosophers">
+          <span class="phil-tag key">Hegel</span>
+          <span class="phil-tag key">Karl Marx</span>
+          <span class="phil-tag">Dialektik</span>
+          <span class="phil-tag">Weltgeist</span>
+          <span class="phil-tag">Klassenkampf</span>
+          <span class="phil-tag">Materialismus</span>
+        </div>
+        <div class="core-idea">Hegel: Geschichte als geistiger Prozess. Marx: Materielle Verhältnisse &amp; Klassenkampf bestimmen Geschichte. Philosophie wird politisch.</div>
+      </div>
+      <div class="stream-card alt-19">
+        <div class="stream-title"><span class="stream-icon">⚡</span> Pessimismus &amp; Nihilismus</div>
+        <div class="philosophers">
+          <span class="phil-tag key">Schopenhauer</span>
+          <span class="phil-tag key">Nietzsche</span>
+          <span class="phil-tag">Wille zur Macht</span>
+          <span class="phil-tag">„Gott ist tot"</span>
+          <span class="phil-tag">Wille als Weltprinzip</span>
+        </div>
+        <div class="core-idea">Schopenhauer: Welt vom Willen beherrscht – dauerhaftes Glück unmöglich. Nietzsche: Zusammenbruch aller Gewissheiten – Neubewertung aller Werte.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 20. JAHRHUNDERT -->
+  <div class="era">
+    <div class="era-header">
+      <div class="era-dot dot-20"></div>
+      <div class="era-label">20. Jahrhundert</div>
+      <div class="era-date">Existenz &amp; Wirklichkeit</div>
+    </div>
+    <div class="cards-row">
+      <div class="stream-card alt-20">
+        <div class="stream-title"><span class="stream-icon">🌑</span> Existenzphilosophie &amp; Phänomenologie</div>
+        <div class="philosophers">
+          <span class="phil-tag key">Karl Jaspers</span>
+          <span class="phil-tag key">Jean-Paul Sartre</span>
+          <span class="phil-tag key">Albert Camus</span>
+          <span class="phil-tag key">Edmund Husserl</span>
+          <span class="phil-tag key">Martin Heidegger</span>
+          <span class="phil-tag">Freiheit</span>
+          <span class="phil-tag">Absurdität</span>
+          <span class="phil-tag">Geworfenheit</span>
+        </div>
+        <div class="core-idea">„Der Mensch ist zur Freiheit verurteilt" (Sartre). Camus: Sinn suchen in einer sinnlosen Welt. Heidegger: Auseinandersetzung mit Sein &amp; Sterblichkeit.</div>
+      </div>
+      <div class="stream-card alt-20">
+        <div class="stream-title"><span class="stream-icon">🔬</span> Sprachphilosophie &amp; Konstruktivismus</div>
+        <div class="philosophers">
+          <span class="phil-tag key">Ludwig Wittgenstein</span>
+          <span class="phil-tag key">Bertrand Russell</span>
+          <span class="phil-tag">Konstruktivismus</span>
+          <span class="phil-tag">Sprache &amp; Denken</span>
+          <span class="phil-tag">Naturwissenschaft</span>
+        </div>
+        <div class="core-idea">Sprache setzt die Grenzen des Denkens (Wittgenstein). Wirklichkeit als Konstrukt unserer Wahrnehmung. Russell: Naturwissenschaften als Erkenntnisquelle.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer style="text-align:center;margin-top:64px;padding-top:32px;border-top:1px solid rgba(0,0,0,0.08);">
+  <p style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--dusty);">
+    Basierend auf: Hans Joachim Störig · Kleine Weltgeschichte der Philosophie (1990)
+  </p>
+</footer>
+
+</body>
+</html>
