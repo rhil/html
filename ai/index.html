@@ -114,7 +114,8 @@
         
         // Static fallback data if API fails
         const staticPages = [
-          { name: "links.html" }
+          { name: "links.html", type: "file" },
+          { name: "subfolder", type: "dir" }
         ];
         
         try {
@@ -133,29 +134,28 @@
           }
 
           const items = await response.json();
-          const pages = items
+          const entries = items
             .filter(
               (item) =>
-                item.type === "file" &&
-                /\.html?$/i.test(item.name) &&
-                item.name.toLowerCase() !== "index.html"
+                (item.type === "file" && /\.html?$/i.test(item.name) && item.name.toLowerCase() !== "index.html") ||
+                item.type === "dir"
             )
             .sort((a, b) => a.name.localeCompare(b.name));
 
           loading.classList.add("d-none");
           list.classList.remove("d-none");
 
-          if (!pages.length) {
-            list.innerHTML = '<li class="list-group-item">Keine weiteren Seiten gefunden.</li>';
+          if (!entries.length) {
+            list.innerHTML = '<li class="list-group-item">Keine weiteren Seiten oder Ordner gefunden.</li>';
             return;
           }
 
-          list.innerHTML = pages
-            .map((page) => `
+          list.innerHTML = entries
+            .map((entry) => `
               <li class="list-group-item">
-                <a href="./${page.name}">
-                  <i class="bi bi-file-earmark-text"></i>
-                  ${page.name}
+                <a href="./${entry.name}">
+                  <i class="bi ${entry.type === "dir" ? "bi-folder" : "bi-file-earmark-text"}"></i>
+                  ${entry.name}
                 </a>
               </li>
             `)
