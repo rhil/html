@@ -1,7 +1,11 @@
 # Jekyll Configuration for GitHub Pages
-theme: jekyll-theme-minimal
+remote_theme: pages-themes/primer@v0.6.0
 title: HTML Pages
 description: Markdown pages rendered by GitHub Pages
+
+plugins:
+  - jekyll-remote-theme
+
 markdown: kramdown
 kramdown:
   input: GFM
@@ -9,7 +13,6 @@ kramdown:
   parse_block_html: true
 
 # Build settings
-safe: true
 exclude:
   - README.md
   - Gemfile
@@ -19,8 +22,3 @@ exclude:
 
 # Permalink structure
 permalink: /:path/
-
-collections:
-  pages:
-    output: true
-    permalink: /:collection/:name/

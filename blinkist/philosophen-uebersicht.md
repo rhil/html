@@ -1,5 +1,4 @@
 ---
-layout: default
 title: Kleine Weltgeschichte der Philosophie
 ---
 
