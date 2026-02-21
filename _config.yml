@@ -1,0 +1,26 @@
+# Jekyll Configuration for GitHub Pages
+theme: jekyll-theme-minimal
+title: HTML Pages
+description: Markdown pages rendered by GitHub Pages
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  parse_block_html: true
+
+# Build settings
+safe: true
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - .git
+  - .gitignore
+
+# Permalink structure
+permalink: /:path/
+
+collections:
+  pages:
+    output: true
+    permalink: /:collection/:name/

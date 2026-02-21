@@ -1,3 +1,8 @@
+---
+layout: default
+title: Kleine Weltgeschichte der Philosophie
+---
+
 # Kleine Weltgeschichte der Philosophie
 ### Philosophen & Strömungen im Überblick
 *Basierend auf: Hans Joachim Störig (1990)*
