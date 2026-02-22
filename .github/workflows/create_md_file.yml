@@ -7,6 +7,8 @@ on:
 jobs:
   create-md-file:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -17,7 +19,9 @@ jobs:
       - name: Create markdown file
         run: |
           mkdir -p "${{ github.event.client_payload.directory || '.' }}"
-          echo "${{ github.event.client_payload.content }}" > "${{ github.event.client_payload.directory || '.' }}/${{ github.event.client_payload.filename }}.md"
+          # Strip .md extension from filename if already present to avoid double .md.md
+          FILENAME=$(basename "${{ github.event.client_payload.filename }}" .md)
+          echo "${{ github.event.client_payload.content }}" > "${{ github.event.client_payload.directory || '.' }}/${FILENAME}.md"
 
       - name: Commit and push changes
         run: |
