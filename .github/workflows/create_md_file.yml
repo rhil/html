@@ -1,0 +1,18 @@
+name: Create Markdown File
+
+on:
+  repository_dispatch:
+    types: [create_md_file]
+
+jobs:
+  create_md_file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Create markdown file
+        run: |
+          echo "${{ github.event.client_payload.content }}" > "${{ github.event.client_payload.directory || '.' }}/${{ github.event.client_payload.filename }}.md"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
