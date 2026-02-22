@@ -7,7 +7,9 @@ title: Kleine Weltgeschichte der Philosophie
 *Basierend auf: Hans Joachim Störig (1990)*
 
 ---
+[blinkist](https://www.blinkist.com/en/app/books/kleine-weltgeschichte-der-philosophie-de)
 
+---
 ## 🕉️ Altindische Philosophie
 *ca. 1500–500 v. Chr.*
 
