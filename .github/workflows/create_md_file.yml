@@ -2,17 +2,26 @@ name: Create Markdown File
 
 on:
   repository_dispatch:
-    types: [create_md_file]
+    types: [create-md-file]
 
 jobs:
-  create_md_file:
+  create-md-file:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Create markdown file
         run: |
+          mkdir -p "${{ github.event.client_payload.directory || '.' }}"
           echo "${{ github.event.client_payload.content }}" > "${{ github.event.client_payload.directory || '.' }}/${{ github.event.client_payload.filename }}.md"
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add .
+          git commit -m "Add markdown file: ${{ github.event.client_payload.filename }}"
+          git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
