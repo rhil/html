@@ -53,11 +53,11 @@ jobs:
           # ✅ Build JSON using jq reading from file — 100% safe
           # Try models in order until one works
           MODELS=(
+            "openai/gpt-4o-mini"    # ← paid fallback, ~$0.0001/snippet
             "google/gemma-3-27b-it:free"
             "meta-llama/llama-3.2-3b-instruct:free"
             "nousresearch/hermes-3-llama-3.1-405b:free"
             "qwen/qwen3-4b:free"
-            "z-ai/glm-4.5-air:free"    
           )
 
           FORMATTED=""
