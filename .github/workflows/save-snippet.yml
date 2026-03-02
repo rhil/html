@@ -1,0 +1,55 @@
+name: Save Snippet to Markdown
+
+on:
+  repository_dispatch:
+    types: [save-snippet]
+
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Needed to commit files
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create Markdown snippet file
+        env:
+          TEXT:      ${{ github.event.client_payload.text }}
+          URL:       ${{ github.event.client_payload.url }}
+          TITLE:     ${{ github.event.client_payload.title }}
+          TIMESTAMP: ${{ github.event.client_payload.timestamp }}
+        run: |
+          # Build a safe filename from the date
+          DATE=$(echo "$TIMESTAMP" | cut -c1-10)
+          SAFE_TITLE=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | cut -c1-40)
+          FILENAME="notes/${DATE}-${SAFE_TITLE}.md"
+
+          mkdir -p notes
+
+          # Write the markdown file
+          cat > "$FILENAME" << EOF
+          ---
+          title: "$TITLE"
+          source: "$URL"
+          saved_at: "$TIMESTAMP"
+          ---
+
+          ## 📝 Saved Snippet
+
+          $TEXT
+
+          ---
+          *Saved from: [$URL]($URL)*
+          EOF
+
+          echo "Created: $FILENAME"
+
+      - name: Commit and push
+        run: |
+          git config user.name  "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add notes/
+          git commit -m "📝 New snippet saved [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+          git push
