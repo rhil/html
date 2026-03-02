@@ -30,28 +30,15 @@ jobs:
 
           mkdir -p notes
 
-          # Build JSON payload safely with jq
-          PAYLOAD=$(jq -n \
+          # ✅ Write TEXT to a temp file — avoids ALL shell escaping issues
+          printf '%s' "$TEXT" > /tmp/snippet_text.txt
+
+          # ✅ Build JSON using jq reading from file — 100% safe
+          PAYLOAD=$(jq -Rs \
             --arg model "mistralai/mistral-7b-instruct" \
-            --arg system "You are a Markdown formatter. Format the user's text into clean, well-structured Markdown. Rules: 1) DO NOT change, add, or remove any content or words. 2) Add proper headings, bullet points, bold/italic where it makes sense. 3) Output ONLY the formatted Markdown, no explanations." \
-            --arg user "$TEXT" \
-            '{
-              model: $model,
-              messages: [
-                { role: "system", content: $system },
-                { role: "user",   content: $user   }
-              ]
-            }')
-          echo "Payload: $PAYLOAD"
-
-          FORMATTED_debug=$(curl -s \
-            "https://openrouter.ai/api/v1/chat/completions" \
-            -H "Authorization: Bearer $OPENROUTER_KEY" \
-            -H "Content-Type: application/json" \
-            -H "X-Title: GitHub Notes Saver" \
-            -d "$PAYLOAD"
-          echo "OpenRouter Response: $FORMATTED_debug"
-
+            --arg system "You are a Markdown formatter. Format the user text into clean well-structured Markdown. Rules: DO NOT change add or remove any words or content. Add proper headings bullet points bold or italic where it makes sense. Output ONLY the formatted Markdown no explanations." \
+            '{ model: $model, messages: [ { role: "system", content: $system }, { role: "user", content: . } ] }' \
+            /tmp/snippet_text.txt)
           # Call OpenRouter
           FORMATTED=$(curl -s \
             "https://openrouter.ai/api/v1/chat/completions" \
@@ -60,19 +47,17 @@ jobs:
             -H "X-Title: GitHub Notes Saver" \
             -d "$PAYLOAD" \
             | jq -r '.choices[0].message.content')
-          echo "Formatted Markdown: $FORMATTED"
-
           # Write the markdown file
           {
             echo "---"
-            echo "title: \"$TITLE\""
-            echo "source: \"$URL\""
-            echo "saved_at: \"$TIMESTAMP\""
+            printf 'title: "%s"\n' "$TITLE"
+            printf 'source: "%s"\n' "$URL"
+            printf 'saved_at: "%s"\n' "$TIMESTAMP"
             echo "---"
             echo ""
-            echo "# $TITLE"
+            printf '# %s\n' "$TITLE"
             echo ""
-            echo "> *Saved on $DATE at ${TIME} UTC*"
+            printf '> *Saved on %s at %s UTC*\n' "$DATE" "$TIME"
             echo ""
             echo "---"
             echo ""
@@ -80,7 +65,7 @@ jobs:
             echo ""
             echo "---"
             echo ""
-            echo "*Source: [$URL]($URL)*"
+            printf '*Source: [%s](%s)*\n' "$URL" "$URL"
           } > "$FILENAME"
 
           echo "Created: $FILENAME"
