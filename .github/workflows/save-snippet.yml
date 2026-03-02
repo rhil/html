@@ -35,18 +35,34 @@ jobs:
 
           # ✅ Build JSON using jq reading from file — 100% safe
           PAYLOAD=$(jq -Rs \
-            --arg model "mistralai/mistral-7b-instruct" \
+            --arg model "mistralai/mistral-7b-instruct:free" \
             --arg system "You are a Markdown formatter. Format the user text into clean well-structured Markdown. Rules: DO NOT change add or remove any words or content. Add proper headings bullet points bold or italic where it makes sense. Output ONLY the formatted Markdown no explanations." \
             '{ model: $model, messages: [ { role: "system", content: $system }, { role: "user", content: . } ] }' \
             /tmp/snippet_text.txt)
-          # Call OpenRouter
-          FORMATTED=$(curl -s \
+
+          # Call OpenRouter & save full response for debugging
+          RESPONSE=$(curl -s \
             "https://openrouter.ai/api/v1/chat/completions" \
             -H "Authorization: Bearer $OPENROUTER_KEY" \
             -H "Content-Type: application/json" \
+            -H "HTTP-Referer: https://github.com" \
             -H "X-Title: GitHub Notes Saver" \
-            -d "$PAYLOAD" \
-            | jq -r '.choices[0].message.content')
+            -d "$PAYLOAD")
+
+          # ✅ Debug: print full API response to Actions log
+          echo "=== OpenRouter RAW RESPONSE ==="
+          echo "$RESPONSE" | jq '.'
+          echo "================================"
+
+          # Extract formatted content
+          FORMATTED=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // empty')
+
+          # ✅ Fallback: if FORMATTED is empty, use raw text
+          if [ -z "$FORMATTED" ]; then
+            echo "⚠️ OpenRouter returned no content — using raw text as fallback"
+            FORMATTED=$(cat /tmp/snippet_text.txt)
+          fi
+
           # Write the markdown file
           {
             echo "---"
@@ -68,7 +84,7 @@ jobs:
             printf '*Source: [%s](%s)*\n' "$URL" "$URL"
           } > "$FILENAME"
 
-          echo "Created: $FILENAME"
+          echo "✅ Created: $FILENAME"
 
       - name: Commit and push
         run: |
