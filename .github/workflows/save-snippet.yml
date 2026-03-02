@@ -42,6 +42,15 @@ jobs:
                 { role: "user",   content: $user   }
               ]
             }')
+          echo "Payload: $PAYLOAD"
+
+          FORMATTED_debug=$(curl -s \
+            "https://openrouter.ai/api/v1/chat/completions" \
+            -H "Authorization: Bearer $OPENROUTER_KEY" \
+            -H "Content-Type: application/json" \
+            -H "X-Title: GitHub Notes Saver" \
+            -d "$PAYLOAD"
+          echo "OpenRouter Response: $FORMATTED_debug"
 
           # Call OpenRouter
           FORMATTED=$(curl -s \
@@ -51,6 +60,7 @@ jobs:
             -H "X-Title: GitHub Notes Saver" \
             -d "$PAYLOAD" \
             | jq -r '.choices[0].message.content')
+          echo "Formatted Markdown: $FORMATTED"
 
           # Write the markdown file
           {
