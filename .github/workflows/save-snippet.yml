@@ -14,20 +14,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Write payload to file
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const payload = {
+              text:      context.payload.client_payload.text,
+              url:       context.payload.client_payload.url,
+              title:     context.payload.client_payload.title,
+              timestamp: context.payload.client_payload.timestamp,
+            };
+            fs.writeFileSync('/tmp/payload.json', JSON.stringify(payload));
+
       - name: Format with OpenRouter & Save
         env:
-          TEXT:             ${{ github.event.client_payload.text }}
-          URL:              ${{ github.event.client_payload.url }}
-          TITLE:            ${{ github.event.client_payload.title }}
-          TIMESTAMP:        ${{ github.event.client_payload.timestamp }}
           OPENROUTER_KEY:   ${{ secrets.OPENROUTER_API_KEY }}
         run: |
+          # ✅ Read ALL values from file — shell never sees raw user text
+          TEXT=$(jq -r '.text'           /tmp/payload.json)
+          URL=$(jq -r '.url'             /tmp/payload.json)
+          TITLE=$(jq -r '.title'         /tmp/payload.json)
+          TIMESTAMP=$(jq -r '.timestamp' /tmp/payload.json)
+
           # Build a safe filename from the date
           DATE=$(echo "$TIMESTAMP" | cut -c1-10)
           TIME=$(echo "$TIMESTAMP" | cut -c12-16)
           SAFE_TITLE=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | cut -c1-50)
           FILENAME="notes/${DATE}-${SAFE_TITLE}.md"
-
           mkdir -p notes
 
           # ✅ Write TEXT to a temp file — avoids ALL shell escaping issues
