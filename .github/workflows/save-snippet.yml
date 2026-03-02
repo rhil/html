@@ -48,8 +48,18 @@ jobs:
           printf '%s' "$TEXT" > /tmp/snippet_text.txt
 
           # ✅ Build JSON using jq reading from file — 100% safe
+          # Try models in order until one works
+          MODELS=(
+            "qwen/qwen3-4b:free"
+            "meta-llama/llama-3.2-3b-instruct:free"
+            "nousresearch/hermes-3-llama-3.1-405b:free"
+          )
+
+          FORMATTED=""
+          for MODEL in "${MODELS[@]}"; do
+            echo "Trying model: $MODEL"
           PAYLOAD=$(jq -Rs \
-            --arg model "google/gemma-3-27b-it:free" \
+              --arg model "$MODEL" \
             --arg system "You are a Markdown formatter. Format the user text into clean well-structured Markdown. Rules: DO NOT change add or remove any words or content. Add proper headings bullet points bold or italic where it makes sense. Output ONLY the formatted Markdown no explanations." \
             '{ model: $model, messages: [ { role: "system", content: $system }, { role: "user", content: . } ] }' \
             /tmp/snippet_text.txt)
@@ -70,10 +80,17 @@ jobs:
 
           # Extract formatted content
           FORMATTED=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // empty')
+            if [ -n "$FORMATTED" ]; then
+              echo "✅ Success with model: $MODEL"
+              break
+          fi
+            echo "⚠️ Failed with $MODEL, trying next..."
+          done
 
           # ✅ Fallback: if FORMATTED is empty, use raw text
+          # Final fallback — use raw text if all models fail
           if [ -z "$FORMATTED" ]; then
-            echo "⚠️ OpenRouter returned no content — using raw text as fallback"
+            echo "⚠️ All models failed — using raw text as fallback"
             FORMATTED=$(cat /tmp/snippet_text.txt)
           fi
 
