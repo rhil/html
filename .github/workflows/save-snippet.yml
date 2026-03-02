@@ -56,7 +56,6 @@ jobs:
             "qwen/qwen3-4b:free"
             "z-ai/glm-4.5-air:free"    
           )
-          # 
 
           FORMATTED=""
           for MODEL in "${MODELS[@]}"; do

@@ -1,0 +1,10 @@
+name: Create MD File
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo test
+        run: echo "test"
