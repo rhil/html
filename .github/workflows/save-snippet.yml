@@ -50,17 +50,25 @@ jobs:
           # ✅ Write TEXT to a temp file — avoids ALL shell escaping issues
           printf '%s' "$TEXT" > /tmp/snippet_text.txt
 
-          # ✅ Build JSON using jq reading from file — 100% safe
-          # Try models in order until one works
+          # ✅ Load models and AI config from external files
           mapfile -t MODELS < <(grep -v '^\s*#' config/models.txt | grep -v '^\s*$')
           echo "📋 Loaded ${#MODELS[@]} models from config/models.txt"
+
+          SYSTEM_PROMPT=$(jq -r '.system_prompt' config/ai-config.json)
+          TEMPERATURE=$(jq -r '.temperature'     config/ai-config.json)
+          MAX_TOKENS=$(jq -r '.max_tokens'        config/ai-config.json)
+          echo "⚙️  AI config loaded from config/ai-config.json"
+
+          # Try models in order until one works
           FORMATTED=""
           for MODEL in "${MODELS[@]}"; do
             echo "Trying model: $MODEL"
           PAYLOAD=$(jq -Rs \
-              --arg model "$MODEL" \
-            --arg system "You are a Markdown formatter. Format the user text into clean well-structured Markdown. Rules: DO NOT change add or remove any words or content. Add proper headings bullet points bold or italic where it makes sense. Output ONLY the formatted Markdown no explanations." \
-            '{ model: $model, messages: [ { role: "system", content: $system }, { role: "user", content: . } ] }' \
+              --arg   model       "$MODEL" \
+              --arg   system      "$SYSTEM_PROMPT" \
+              --argjson temperature "$TEMPERATURE" \
+              --argjson max_tokens  "$MAX_TOKENS" \
+            '{ model: $model, temperature: $temperature, max_tokens: $max_tokens, messages: [ { role: "system", content: $system }, { role: "user", content: . } ] }' \
             /tmp/snippet_text.txt)
 
           # Call OpenRouter & save full response for debugging
