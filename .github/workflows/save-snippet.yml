@@ -14,35 +14,64 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create Markdown snippet file
+      - name: Format with OpenRouter & Save
         env:
-          TEXT:      ${{ github.event.client_payload.text }}
-          URL:       ${{ github.event.client_payload.url }}
-          TITLE:     ${{ github.event.client_payload.title }}
-          TIMESTAMP: ${{ github.event.client_payload.timestamp }}
+          TEXT:             ${{ github.event.client_payload.text }}
+          URL:              ${{ github.event.client_payload.url }}
+          TITLE:            ${{ github.event.client_payload.title }}
+          TIMESTAMP:        ${{ github.event.client_payload.timestamp }}
+          OPENROUTER_KEY:   ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           # Build a safe filename from the date
           DATE=$(echo "$TIMESTAMP" | cut -c1-10)
-          SAFE_TITLE=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | cut -c1-40)
+          TIME=$(echo "$TIMESTAMP" | cut -c12-16)
+          SAFE_TITLE=$(echo "$TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | cut -c1-50)
           FILENAME="notes/${DATE}-${SAFE_TITLE}.md"
 
           mkdir -p notes
 
+          # Build JSON payload safely with jq
+          PAYLOAD=$(jq -n \
+            --arg model "mistralai/mistral-7b-instruct" \
+            --arg system "You are a Markdown formatter. Format the user's text into clean, well-structured Markdown. Rules: 1) DO NOT change, add, or remove any content or words. 2) Add proper headings, bullet points, bold/italic where it makes sense. 3) Output ONLY the formatted Markdown, no explanations." \
+            --arg user "$TEXT" \
+            '{
+              model: $model,
+              messages: [
+                { role: "system", content: $system },
+                { role: "user",   content: $user   }
+              ]
+            }')
+
+          # Call OpenRouter
+          FORMATTED=$(curl -s \
+            "https://openrouter.ai/api/v1/chat/completions" \
+            -H "Authorization: Bearer $OPENROUTER_KEY" \
+            -H "Content-Type: application/json" \
+            -H "X-Title: GitHub Notes Saver" \
+            -d "$PAYLOAD" \
+            | jq -r '.choices[0].message.content')
+
           # Write the markdown file
-          cat > "$FILENAME" << EOF
-          ---
-          title: "$TITLE"
-          source: "$URL"
-          saved_at: "$TIMESTAMP"
-          ---
-
-          ## 📝 Saved Snippet
-
-          $TEXT
-
-          ---
-          *Saved from: [$URL]($URL)*
-          EOF
+          {
+            echo "---"
+            echo "title: \"$TITLE\""
+            echo "source: \"$URL\""
+            echo "saved_at: \"$TIMESTAMP\""
+            echo "---"
+            echo ""
+            echo "# $TITLE"
+            echo ""
+            echo "> *Saved on $DATE at ${TIME} UTC*"
+            echo ""
+            echo "---"
+            echo ""
+            printf '%s\n' "$FORMATTED"
+            echo ""
+            echo "---"
+            echo ""
+            echo "*Source: [$URL]($URL)*"
+          } > "$FILENAME"
 
           echo "Created: $FILENAME"
 
@@ -51,5 +80,5 @@ jobs:
           git config user.name  "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add notes/
-          git commit -m "📝 New snippet saved [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+          git commit -m "📝 snippet: $(date -u '+%Y-%m-%d %H:%M UTC')"
           git push
