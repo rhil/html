@@ -1,7 +1,7 @@
 # OpenRouter model fallback list
 # One model per line — tried top to bottom
 # Comment lines (#) and blank lines are ignored
-anthropic/claude-haiku-4-5
 google/gemini-flash-1.5
-meta-llama/llama-3.1-70b-instruct:free
-mistralai/mistral-7b-instruct:free
+#anthropic/claude-haiku-4-5
+#meta-llama/llama-3.1-70b-instruct:free
+#mistralai/mistral-7b-instruct:free
