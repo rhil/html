@@ -58,6 +58,7 @@ jobs:
 
           TEMPERATURE=$(jq -r '.temperature' config/ai-config.json)
           MAX_TOKENS=$(jq -r '.max_tokens'   config/ai-config.json)
+          LANGFUSE_HOST=$(jq -r '.langfuse_host' config/ai-config.json)
           PROMPT_NAME=$(jq -r '.langfuse_prompt_name' config/ai-config.json)
 
           # ✅ Fetch system prompt from Langfuse (fallback to config if unavailable)
@@ -65,7 +66,7 @@ jobs:
           if [ -n "$LANGFUSE_PUBLIC_KEY" ] && [ -n "$LANGFUSE_SECRET_KEY" ]; then
             LANGFUSE_AUTH=$(printf '%s:%s' "$LANGFUSE_PUBLIC_KEY" "$LANGFUSE_SECRET_KEY" | base64 -w0)
             LANGFUSE_RESPONSE=$(curl -s \
-              "https://cloud.langfuse.com/api/public/v2/prompts/${PROMPT_NAME}?label=production" \
+              "${LANGFUSE_HOST}/api/public/v2/prompts/${PROMPT_NAME}?label=production" \
               -H "Authorization: Basic $LANGFUSE_AUTH")
             echo "=== Langfuse Response ==="
             echo "$LANGFUSE_RESPONSE" | jq 'del(.prompt) + {prompt: (.prompt | tostring | .[0:80] + "...")}'
