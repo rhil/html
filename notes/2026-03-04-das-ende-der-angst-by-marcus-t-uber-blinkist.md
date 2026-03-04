@@ -1,12 +1,12 @@
 ---
 title: "Das Ende der Angst by Marcus Täuber - Blinkist"
 source: "https://www.blinkist.com/en/reader/books/das-ende-der-angst-de"
-saved_at: "2026-03-04T22:27:33.757Z"
+saved_at: "2026-03-04T22:30:08.294Z"
 ---
 
 # Das Ende der Angst by Marcus Täuber - Blinkist
 
-> *Saved on 2026-03-04 at 22:27 UTC*
+> *Saved on 2026-03-04 at 22:30 UTC*
 
 ---
 
