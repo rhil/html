@@ -1,8 +1,7 @@
 # OpenRouter model fallback list
 # One model per line — tried top to bottom
 # Comment lines (#) and blank lines are ignored
-openai/gpt-4o-mini
-google/gemma-3-27b-it:free
-meta-llama/llama-3.2-3b-instruct:free
-nousresearch/hermes-3-llama-3.1-405b:free
-qwen/qwen3-4b:free
+anthropic/claude-haiku-4-5
+google/gemini-flash-1.5
+meta-llama/llama-3.1-70b-instruct:free
+mistralai/mistral-7b-instruct:free

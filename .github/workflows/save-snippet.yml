@@ -68,7 +68,7 @@ jobs:
               --arg   system      "$SYSTEM_PROMPT" \
               --argjson temperature "$TEMPERATURE" \
               --argjson max_tokens  "$MAX_TOKENS" \
-            '{ model: $model, temperature: $temperature, max_tokens: $max_tokens, messages: [ { role: "system", content: $system }, { role: "user", content: . } ] }' \
+            '{ model: $model, temperature: $temperature, max_tokens: $max_tokens, messages: [ { role: "system", content: $system }, { role: "user", content: ("Format this text into Markdown. Keep EVERY word. Do NOT shorten or summarize:\n\n" + .) } ] }' \
             /tmp/snippet_text.txt)
 
           # Call OpenRouter & save full response for debugging
