@@ -69,8 +69,14 @@ jobs:
               "${LANGFUSE_HOST}/api/public/v2/prompts/${PROMPT_NAME}?label=production" \
               -H "Authorization: Basic $LANGFUSE_AUTH")
             echo "=== Langfuse Response ==="
-            echo "$LANGFUSE_RESPONSE" | jq 'del(.prompt) + {prompt: (.prompt | tostring | .[0:80] + "...")}'
-            SYSTEM_PROMPT=$(echo "$LANGFUSE_RESPONSE" | jq -r '.prompt // empty')
+            echo "$LANGFUSE_RESPONSE"
+            # Handle both text prompt (string) and chat prompt (array)
+            PROMPT_TYPE=$(echo "$LANGFUSE_RESPONSE" | jq -r '.prompt | type' 2>/dev/null)
+            if [ "$PROMPT_TYPE" = "string" ]; then
+              SYSTEM_PROMPT=$(echo "$LANGFUSE_RESPONSE" | jq -r '.prompt')
+            elif [ "$PROMPT_TYPE" = "array" ]; then
+              SYSTEM_PROMPT=$(echo "$LANGFUSE_RESPONSE" | jq -r '[.prompt[] | select(.role=="system") | .content][0] // empty')
+            fi
           fi
 
           if [ -z "$SYSTEM_PROMPT" ]; then
