@@ -32,7 +32,9 @@ jobs:
 
       - name: Format with OpenRouter & Save
         env:
-          OPENROUTER_KEY:   ${{ secrets.OPENROUTER_KEY }}
+          OPENROUTER_KEY:        ${{ secrets.OPENROUTER_KEY }}
+          LANGFUSE_PUBLIC_KEY:   ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY:   ${{ secrets.LANGFUSE_SECRET_KEY }}
         run: |
           # ✅ Read ALL values from file — shell never sees raw user text
           TEXT=$(jq -r '.text'           /tmp/payload.json)
@@ -54,10 +56,29 @@ jobs:
           mapfile -t MODELS < <(grep -v '^\s*#' config/models.txt | grep -v '^\s*$')
           echo "📋 Loaded ${#MODELS[@]} models from config/models.txt"
 
-          SYSTEM_PROMPT=$(jq -r '.system_prompt' config/ai-config.json)
-          TEMPERATURE=$(jq -r '.temperature'     config/ai-config.json)
-          MAX_TOKENS=$(jq -r '.max_tokens'        config/ai-config.json)
-          echo "⚙️  AI config loaded from config/ai-config.json"
+          TEMPERATURE=$(jq -r '.temperature' config/ai-config.json)
+          MAX_TOKENS=$(jq -r '.max_tokens'   config/ai-config.json)
+          PROMPT_NAME=$(jq -r '.langfuse_prompt_name' config/ai-config.json)
+
+          # ✅ Fetch system prompt from Langfuse (fallback to config if unavailable)
+          SYSTEM_PROMPT=""
+          if [ -n "$LANGFUSE_PUBLIC_KEY" ] && [ -n "$LANGFUSE_SECRET_KEY" ]; then
+            LANGFUSE_AUTH=$(printf '%s:%s' "$LANGFUSE_PUBLIC_KEY" "$LANGFUSE_SECRET_KEY" | base64 -w0)
+            LANGFUSE_RESPONSE=$(curl -s \
+              "https://cloud.langfuse.com/api/public/v2/prompts/${PROMPT_NAME}?label=production" \
+              -H "Authorization: Basic $LANGFUSE_AUTH")
+            echo "=== Langfuse Response ==="
+            echo "$LANGFUSE_RESPONSE" | jq 'del(.prompt) + {prompt: (.prompt | tostring | .[0:80] + "...")}'
+            SYSTEM_PROMPT=$(echo "$LANGFUSE_RESPONSE" | jq -r '.prompt // empty')
+          fi
+
+          if [ -z "$SYSTEM_PROMPT" ]; then
+            echo "⚠️  Langfuse unavailable — using fallback from config/ai-config.json"
+            SYSTEM_PROMPT=$(jq -r '.system_prompt' config/ai-config.json)
+          else
+            echo "✅ System prompt loaded from Langfuse (${PROMPT_NAME})"
+          fi
+          echo "⚙️  AI config loaded"
 
           # Try models in order until one works
           FORMATTED=""
